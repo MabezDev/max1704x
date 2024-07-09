@@ -7,6 +7,7 @@ const DEFAULT_RCOMP: u8 = 0x97;
 
 pub struct Max17048<I> {
     i2c: I,
+    addr: u8,
     recv_buffer: [u8; 2],
 }
 
@@ -15,13 +16,18 @@ where
     I: WriteRead<Error = E> + Write<Error = E>,
     E: core::fmt::Debug,
 {
-    pub fn new(i2c: I) -> Self {
+    pub fn new(i2c: I, addr: u8) -> Self {
         let mut max = Max17048 {
             i2c,
+            addr,
             recv_buffer: [0u8; 2],
         };
         max.compensation(DEFAULT_RCOMP).unwrap();
         max
+    }
+
+    pub fn new_with_default_addr(i2c: I) -> Self {
+        Self::new(i2c, MAX17048_ADDR)
     }
 
     pub fn version(&mut self) -> Result<u16, E> {
@@ -80,7 +86,7 @@ where
     fn read(&mut self, reg: u8) -> Result<u16, E> {
         match self
             .i2c
-            .write_read(MAX17048_ADDR, &[reg], &mut self.recv_buffer)
+            .write_read(self.addr, &[reg], &mut self.recv_buffer)
         {
             Ok(_) => Ok((self.recv_buffer[0] as u16) << 8 | self.recv_buffer[1] as u16),
             Err(e) => Err(e),
@@ -88,10 +94,10 @@ where
     }
 
     fn write(&mut self, reg: u8, value: u16) -> Result<(), E> {
-        self.i2c.write(MAX17048_ADDR, &[reg])?;
+        self.i2c.write(self.addr, &[reg])?;
         let msb = ((value & 0xFF00) >> 8) as u8;
         let lsb = ((value & 0x00FF) >> 0) as u8;
-        self.i2c.write(MAX17048_ADDR, &[msb, lsb])?;
+        self.i2c.write(self.addr, &[msb, lsb])?;
         Ok(())
     }
 }
