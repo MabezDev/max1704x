@@ -3,7 +3,7 @@
 use embedded_hal::blocking::i2c::{Write, WriteRead};
 
 const MAX17048_ADDR: u8 = 0x6C;
-const DEFAULT_RCOMP: u8 = 0x97;
+pub const DEFAULT_RCOMP: u8 = 0x97;
 
 pub struct Max17048<I> {
     i2c: I,
@@ -22,7 +22,6 @@ where
             addr,
             recv_buffer: [0u8; 2],
         };
-        max.compensation(DEFAULT_RCOMP).unwrap();
         max
     }
 
