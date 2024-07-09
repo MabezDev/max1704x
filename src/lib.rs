@@ -3,7 +3,7 @@
 use embedded_hal::blocking::i2c::{Write, WriteRead};
 
 const MAX17048_ADDR: u8 = 0x6C;
-pub const DEFAULT_RCOMP: u8 = 0x97;
+const DEFAULT_RCOMP: u8 = 0x97;
 
 pub struct Max17048<I> {
     i2c: I,
@@ -27,6 +27,10 @@ where
 
     pub fn new_with_default_addr(i2c: I) -> Self {
         Self::new(i2c, MAX17048_ADDR)
+    }
+
+    pub fn default_compensation(&mut self) -> Result<(), E> {
+        self.compensation(DEFAULT_RCOMP)
     }
 
     pub fn version(&mut self) -> Result<u16, E> {
